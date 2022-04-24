@@ -13,6 +13,7 @@
 #include<thread>
 #include<random>
 #include<complex>
+#include <type_traits>
 using namespace std;
 
 // fill vector with random values
@@ -1358,8 +1359,135 @@ int main()
 	}
 	//*/
 
+	// std::rotate
+	// moze da se koristi za n pa i jednu ratociju levo / desno
+	/*
+	{
+		auto print = [](auto const& remark, auto const& v) {
+			std::cout << remark;
+			for (int n : v)
+				std::cout << n << ' ';
+			std::cout << '\n';
+		};
+		std::vector<int> v{ 2, 4, 2, 0, 5, 10, 7, 3, 7, 1 };
+		print("before sort:\t\t", v);
+
+		// insertion sort
+		for (auto i = v.begin(); i != v.end(); ++i)
+			std::rotate(std::upper_bound(v.begin(), i, *i), i, i + 1);
+
+		print("after sort:\t\t", v);
+		// simple rotation to the left
+		std::rotate(v.begin(), v.begin() + 1, v.end());
+		print("simple rotate left:\t", v);
+		// simple rotation to the right
+		std::rotate(v.rbegin(), v.rbegin() + 1, v.rend());
+		print("simple rotate right:\t", v);
+	}
+	//*/
+
+	// std::ranges::rotate C++20
+	/*
+	{
+		std::string s(16, ' ');
+
+		std::iota(s.begin(), s.end(), 'A');
+		std::cout << "Rotate left (" << 0 << "): " << s << '\n';
+		for (int k{ 1 }; k != 5; ++k) {
+			static int i = 1;
+			std::ranges::rotate(s, s.begin() + i);
+			std::cout << "Rotate left (" << k << "): " << s << '\n';
+		}
+
+		std::cout << '\n';
+
+		for (int k{}; k != 5; ++k) {
+			std::iota(s.begin(), s.end(), 'A');
+			std::ranges::rotate(s, s.end() - k);
+			std::cout << "Rotate right (" << k << "): " << s << '\n';
+		}
+
+		std::cout << "\n" "Insertion sort using `rotate`, step-by-step:\n";
+
+		s = { '2', '4', '2', '0', '5', '9', '7', '3', '7', '1' };
+
+		for (auto i = s.begin(); i != s.end(); ++i) {
+			std::cout << "i = " << std::ranges::distance(s.begin(), i) << ": ";
+			std::ranges::rotate(std::ranges::upper_bound(s.begin(), i, *i), i, i + 1);
+			std::cout << s << '\n';
+		}
+		std::cout << (std::ranges::is_sorted(s) ? "Sorted!" : "Not sorted.") << '\n';
 
 
+	}
+	//*/
+
+	// std::rotate_copy
+	/*
+	{
+		std::vector<int> src = { 1, 2, 3, 4, 5 };
+		std::vector<int> dest(src.size());
+		auto pivot = std::find(src.begin(), src.end(), 3);
+
+		std::rotate_copy(src.begin(), pivot, src.end(), dest.begin());
+		for (int i : dest) {
+			std::cout << i << ' ';
+		}
+		std::cout << '\n';
+
+		// copy the rotation result directly to the std::cout
+		pivot = std::find(dest.begin(), dest.end(), 1);
+		std::rotate_copy(dest.begin(), pivot, dest.end(),
+			std::ostream_iterator<int>(std::cout, " "));
+		std::cout << '\n';
+	}
+	//*/
+
+	// std::ranges::rotate_copy, std::ranges::rotate_copy_result C++20
+	/*
+	{
+		std::vector<int> src{ 1, 2, 3, 4, 5 };
+		std::vector<int> dest(src.size());
+		auto pivot = std::ranges::find(src, 3);
+
+		std::ranges::rotate_copy(src, pivot, dest.begin());
+		for (int i : dest) { std::cout << i << ' '; }
+		std::cout << '\n';
+
+		// copy the rotation result directly to the std::cout
+		pivot = std::ranges::find(dest, 1);
+		std::ranges::rotate_copy(dest, pivot, std::ostream_iterator<int>(std::cout, " "));
+		std::cout << '\n';
+	}
+	//*/
+
+	// std::shift_left, std::shift_right C++20
+	///*
+		// overload << operator for vector<int> to print it
+		
+		std::cout << std::left;
+
+		std::vector<int>          b{ 1, 2, 3, 4, 5, 6, 7 };
+		std::vector<std::string>  c{ "a", "b", "c", "d", "e", "f", "g" };
+
+		std::cout << "vector<S> \tvector<int> \tvector<string>\n";
+		std::cout << a << "  " << b << "  " << c << '\n';
+
+		std::shift_left(begin(b), end(b), 3);
+		std::shift_left(begin(c), end(c), 3);
+		std::cout << a << "  " << b << "  " << c << '\n';
+
+		std::shift_right(begin(b), end(b), 2);
+		std::shift_right(begin(c), end(c), 2);
+		std::cout << a << "  " << b << "  " << c << '\n';
+
+		std::shift_left(begin(b), end(b), 8);  // ditto
+		std::shift_left(begin(c), end(c), 8);  // ditto
+		std::cout << a << "  " << b << "  " << c << '\n';
+		k
+			k
+	}
+	//*/
 
 	return 0;
 }

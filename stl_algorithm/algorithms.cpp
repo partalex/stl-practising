@@ -1231,7 +1231,7 @@ int main()
 	//*/
 
 	// std::ranges::swap_ranges, std::ranges::swap_ranges_result
-	///*
+	/*
 	{
 		auto print = [](std::string_view name, auto const& seq, std::string_view term = "\n") {
 			std::cout << name << " : ";
@@ -1239,6 +1239,7 @@ int main()
 				std::cout << elem << ' ';
 			std::cout << term;
 		};
+
 		std::vector<char>  p{ 'A', 'B', 'C', 'D', 'E' };
 		std::list<char>    q{ '1', '2', '3', '4', '5', '6' };
 
@@ -1260,6 +1261,104 @@ int main()
 		print("q", q);
 	}
 	//*/
+
+	// std::iter_swap
+	// ovaj primer nesto ne radi
+	/*
+	{
+		std::random_device rd;
+		std::mt19937 gen(rd());
+		std::uniform_int_distribution<> dist(-9, +9);
+		std::vector<int> v;
+		std::generate_n(back_inserter(v), 20, bind(dist, gen));
+
+		std::cout << "Before sort: " << std::showpos;
+		for (auto e : v) std::cout << e << ' ';
+
+		//for (auto i = v.begin(); i != v.end(); ++i)
+		//	std::iter_swap(i, std::min_element(i, end));
+
+		std::cout << "\nAfter sort : ";
+		for (auto e : v) std::cout << e << ' ';
+		std::cout << '\n';
+	}
+	//*/
+
+	//std::reverse
+	/*
+	{
+		std::cout << "vector" << '\n';
+		std::vector<int> v{ 1, 2, 3 };
+		for (auto e : v) std::cout << e;
+		std::reverse(v.begin(), v.end());
+		std::cout << '\n';
+		for (auto e : v) std::cout << e;
+
+		std::cout << '\n';
+		std::cout << '\n';
+		std::cout << "array int[]" << '\n';
+		int a[] = { 4, 5, 6, 7 };
+		for (auto e : a) std::cout << e;
+		std::cout << '\n';
+		std::reverse(std::begin(a), std::end(a));
+		for (auto e : a) std::cout << e;
+	}
+	//*/
+
+	// std::ranges::reverse C++20
+	/*
+	{
+		std::string s{ "ABCDEF" };
+		std::cout << s << " -> ";
+		std::ranges::reverse(s.begin(), s.end());
+		std::cout << s << " -> ";
+		std::ranges::reverse(s);
+		std::cout << s << " | ";
+
+		std::array a{ 1, 2, 3, 4, 5 };
+		for (auto e : a) { std::cout << e << ' '; }
+		std::cout << "-> ";
+		std::ranges::reverse(a);
+		for (auto e : a) { std::cout << e << ' '; }
+		std::cout << '\n';
+	}
+	//*/
+
+	// std::reverse_copy
+	/*
+	{
+		auto print = [](std::vector<int> const& v) {
+
+			for (const auto& value : v)
+				std::cout << value << ' ';
+			std::cout << '\t';
+		};
+
+		std::vector<int> v({ 1,2,3 });
+		print(v);
+
+		std::vector<int> destination(3);
+		std::reverse_copy(std::begin(v), std::end(v), std::begin(destination));
+		print(destination);
+
+		std::reverse_copy(std::rbegin(v), std::rend(v), std::begin(destination));
+		print(destination);
+	}
+	//*/
+
+	// std::ranges::reverse_copy, std::ranges::reverse_copy_result C++20
+	/*
+	{
+		std::string x{ "12345" }, y(x.size(), ' ');
+		std::cout << x << " -> ";
+		std::ranges::reverse_copy(x.begin(), x.end(), y.begin());
+		std::cout << y << " -> ";
+		std::ranges::reverse_copy(y, x.begin());
+		std::cout << x << '\n';
+	}
+	//*/
+
+
 
 
 	return 0;

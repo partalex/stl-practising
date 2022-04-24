@@ -12,6 +12,7 @@
 #include<iomanip>
 #include<thread>
 #include<random>
+#include<complex>
 using namespace std;
 
 // fill vector with random values
@@ -1009,11 +1010,257 @@ int main()
 	//*/
 
 	// std::ranges::remove, std::ranges::remove_if C++20
-	///*
+	/*
 	{
+		std::string v1{ "No - Diagnostic - Required" };
+		std::cout << std::quoted(v1) << " (v1, size: " << v1.size() << ")\n";
+		const auto ret = std::ranges::remove(v1, ' ');
+		std::cout << std::quoted(v1) << " (v1 after `remove`, size: " << v1.size() << ")\n";
+		//std::cout << ' ' << std::string(std::distance(v1.begin(), ret.begin()), '^') << '\n';
+		std::cout << ' ' << std::string(std::distance(v1.begin(), ret.begin()), '^') << '\n';
+		v1.erase(ret.begin(), ret.end());
+		std::cout << std::quoted(v1) << " (v1 after `erase`, size: " << v1.size() << ")\n\n";
+
+		// remove_if with custom unary predicate:
+		auto rm = [](char c) { return !std::isupper(c); };
+		std::string v2{ "Substitution Failure Is Not An Error" };
+		std::cout << std::quoted(v2) << " (v2, size: " << v2.size() << ")\n";
+		const auto [first, last] = std::ranges::remove_if(v2, rm);
+		std::cout << std::quoted(v2) << " (v2 after `remove_if`, size: " << v2.size() << ")\n";
+		std::cout << ' ' << std::string(std::distance(v2.begin(), first), '^') << '\n';
+		v2.erase(first, last);
+		std::cout << std::quoted(v2) << " (v2 after `erase`, size: " << v2.size() << ")\n\n";
+
+		// creating a view into a container that is modified by `remove_if`:
+		for (std::string s : {"Small Object Optimization", "Non-Type Template Parameter"}) {
+			std::cout << quoted(s) << " => "
+				<< std::string_view{ begin(s), std::ranges::remove_if(s, rm).begin() } << '\n';
+		}
+	}
+	//*/
+
+	// std::remove_copy, std::remove_copy_if
+	/*
+	{
+		std::string str = "#Return #Value #Optimization";
+		std::cout << "before: " << std::quoted(str) << "\n";
+
+		std::cout << "after:  \"";
+		std::remove_copy(
+			str.begin(),
+			str.end(),
+			std::ostream_iterator<char>(std::cout), '#');
+
+		std::cout << "\n";
+
+		unique_ptr<char[]> buf(new char[str.size()]);
+		auto t = std::remove_copy(
+			str.begin(),
+			str.end(),
+			buf.get(),
+			'#'
+		);
+		cout << buf << "\n";
+	}
+	//*/
+
+	// std::ranges::remove_copy, std::ranges::remove_copy_if, std::ranges::remove_copy_result, std::ranges::remove_copy_if_result C++20
+	/*
+	{
+		auto print = [](const auto rem, const auto& v) {
+			std::cout << rem << ' ';
+			for (const auto& e : v) { std::cout << e << ' '; };
+			std::cout << '\n';
+		};
+
+		// Filter out the hash symbol from the given string.
+		const std::string_view str{ "#Small #Buffer #Optimization" };
+		std::cout << "before: " << std::quoted(str) << "\n";
+
+		std::cout << "after:  \"";
+		std::ranges::remove_copy(str.begin(), str.end(),
+			std::ostream_iterator<char>(std::cout), '#');
+		std::cout << "\"\n";
+
+
+		// Copy only the complex numbers with positive imaginary part.
+		using Ci = std::complex<int>;
+		constexpr std::array<Ci, 5> source{
+			Ci{1,0}, Ci{0,1}, Ci{2,-1}, Ci{3,2}, Ci{4,-3}
+		};
+		std::vector<std::complex<int>> target;
+
+		std::ranges::remove_copy_if(source,
+			std::back_inserter(target),
+			[](int imag) { return imag <= 0; },
+			[](Ci z) { return z.imag(); }
+		);
+
+		print("source:", source);
+		print("target:", target);
+	}
+	//*/
+
+	// std::replace, std::replace_if
+	/*
+	{
+		std::array<int, 10> s{ 5, 7, 4, 2, 8, 6, 1, 9, 0, 3 };
+		std::replace(s.begin(), s.end(), 8, 88);
+
+		for (int a : s)
+			std::cout << a << " ";
+		std::cout << '\n';
+
+		std::replace_if(s.begin(), s.end(),
+			std::bind(std::less<int>(), std::placeholders::_1, 5), 55);
+		for (int a : s)
+			std::cout << a << " ";
+		std::cout << '\n';
+	}
+	//*/
+
+	// std::ranges::replace, std::ranges::replace_if C++20
+	/*
+	{
+		auto print = [](const auto& v) {
+			for (const auto& e : v) { std::cout << e << ' '; }
+			std::cout << '\n';
+		};
+
+		std::array p{ 1, 6, 1, 6, 1, 6 };
+		print(p);
+		std::ranges::replace(p, 6, 9);
+		print(p);
+
+		std::array q{ 1, 2, 3, 6, 7, 8, 4, 5 };
+		print(q);
+		std::ranges::replace_if(q, [](int x) { return 5 < x; }, 5);
+		print(q);
+	}
+	//*/
+
+	// std::replace_copy, std::replace_copy_if
+	/*
+	{
+		std::vector<int> v{ 5, 7, 4, 2, 8, 6, 1, 9, 0, 3 };
+
+		std::replace_copy_if(
+			v.begin(),
+			v.end(),
+			std::ostream_iterator<int>(std::cout, " "),
+			[](int n) {return n > 5; },
+			99
+		);
+		std::cout << '\n';
+
+		vector<int> dest(v.size());
+		std::replace_copy_if(
+			v.begin(),
+			v.end(),
+			dest.begin(),
+			[](int n) {return n > 5; },
+			99
+		);
+
+		// print dest
+		for (int a : dest)
+			std::cout << a << " ";
+
+		std::cout << '\n';
+	}
+	//*/
+
+	// std::ranges::replace_copy, std::ranges::replace_copy_if, std::ranges::replace_copy_result, std::ranges::replace_copy_if_result C++20
+	/*
+	{
+		auto print = [](const auto rem, const auto& v) {
+			for (std::cout << rem << ": "; const auto & e : v)
+				std::cout << e << ' ';
+			std::cout << '\n';
+		};
+
+		std::vector<int> o;
+
+		std::array p{ 1, 6, 1, 6, 1, 6 };
+		o.resize(p.size());
+		print("p", p);
+		std::ranges::replace_copy(p, o.begin(), 6, 9);
+		print("o", o);
+
+		std::array q{ 1, 2, 3, 6, 7, 8, 4, 5 };
+		o.resize(q.size());
+		print("q", q);
+		std::ranges::replace_copy_if(q, o.begin(), [](int x) { return 5 < x; }, 5);
+		print("o", o);
+	}
+	//*/
+
+	// std::swap
+	/*
+	{
+		int min = 1;
+		int max = 5;
+		cout << "min: " << min << " max: " << max << '\n';
+		std::swap(min, max);
+		cout << "min: " << min << " max: " << max << '\n';
 
 	}
 	//*/
+
+	// std::swap_ranges
+	/*
+	{
+		auto print = [](auto comment, auto const& seq) {
+			std::cout << comment;
+			for (const auto& e : seq) { std::cout << e << ' '; }
+			std::cout << '\n';
+		};
+
+		std::vector<char> v = { 'a', 'b', 'c', 'd', 'e' };
+		std::list<char> l = { '1', '2', '3', '4', '5' };
+
+		print("Before swap_ranges:\n" "v: ", v);
+		print("l: ", l);
+
+		std::swap_ranges(v.begin(), v.begin() + 3, l.begin());
+
+		print("After swap_ranges:\n" "v: ", v);
+		print("l: ", l);
+
+	}
+	//*/
+
+	// std::ranges::swap_ranges, std::ranges::swap_ranges_result
+	///*
+	{
+		auto print = [](std::string_view name, auto const& seq, std::string_view term = "\n") {
+			std::cout << name << " : ";
+			for (const auto& elem : seq)
+				std::cout << elem << ' ';
+			std::cout << term;
+		};
+		std::vector<char>  p{ 'A', 'B', 'C', 'D', 'E' };
+		std::list<char>    q{ '1', '2', '3', '4', '5', '6' };
+
+		print("p", p);
+		print("q", q, "\n\n");
+
+		// swap p[0, 2) and q[1, 3):
+		std::ranges::swap_ranges(p.begin(),
+			p.begin() + 4,
+			std::ranges::next(q.begin(), 1),
+			std::ranges::next(q.begin(), 3));
+		print("p", p);
+		print("q", q, "\n\n");
+
+		// swap p[0, 5) and q[0, 5):
+		std::ranges::swap_ranges(p, q);
+
+		print("p", p);
+		print("q", q);
+	}
+	//*/
+
 
 	return 0;
 }
